@@ -8,9 +8,12 @@ import java.util.EnumSet;
 import java.util.HashMap;
 
 public class Ore {
+
 	private static HashMap<Material, Ore> byMaterial = new HashMap<Material, Ore>();
 	private static HashMap<String, Ore> byName = new HashMap<String, Ore>();
-	public Ore(String name, String displayName, String displayNamePlural, double value, EnumSet<Material> materials) {
+
+	public Ore(String name, String displayName, String displayNamePlural, double value, boolean checkDrops, EnumSet<Material> materials) {
+		this.checkDrops = checkDrops;
 		this.name = name.toLowerCase();
 		this.displayName = displayName;
 		this.displayNamePlural = displayNamePlural;
@@ -31,11 +34,11 @@ public class Ore {
 	}
 
 	private final String name;
-
 	private final String displayName;
 	private final String displayNamePlural;
 	private final EnumSet<Material> materials;
 	private final double value;
+	private final boolean checkDrops;
 
 	public static void reset() {
 		byName.clear();
@@ -68,5 +71,9 @@ public class Ore {
 
 	public static Collection<Ore> values() {
 		return byName.values();
+	}
+
+	public boolean isCheckDrops() {
+		return checkDrops;
 	}
 }

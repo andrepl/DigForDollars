@@ -151,8 +151,8 @@ public class DigForDollars extends JavaPlugin implements Listener {
 			}
 
 			double value = cfg.getDouble("value");
-
-			Ore ore = new Ore(key, displayName,  displayNamePlural, value, mats);
+			boolean checkDrops = cfg.getBoolean("check-drops", true);
+			Ore ore = new Ore(key, displayName,  displayNamePlural, value, true, mats);
 			Permission perm = new Permission("digfordollars.payfor." + key);
 			perm.addParent(wildcard, true);
 			perm.recalculatePermissibles();
@@ -195,15 +195,18 @@ public class DigForDollars extends JavaPlugin implements Listener {
 			return;
 		}
 
-		boolean drops = false;
-		try {
-			drops = (Boolean) itemCausesDrops.invoke(event.getBlock(), player.getItemInHand());
-		} catch (InvocationTargetException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
+		boolean pay = true;
+		if (ore.isCheckDrops()) {
+			pay = false;
+			try {
+				pay = (Boolean) itemCausesDrops.invoke(event.getBlock(), player.getItemInHand());
+			} catch (InvocationTargetException e) {
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			}
 		}
-		if (drops && !player.getItemInHand().getEnchantments().containsKey(Enchantment.SILK_TOUCH)) {
+		if (pay && !player.getItemInHand().getEnchantments().containsKey(Enchantment.SILK_TOUCH)) {
 			if (!requirePermissions || player.hasPermission(ore.getRequiredPermission())) {
 				getPlayerTally(player).add(ore);
 			}
