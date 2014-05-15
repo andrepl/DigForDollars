@@ -1,0 +1,5 @@
+main: ${project.main}
+name: ${project.name}
+version: ${project.version}
+author: ${project.authors}
+depend: [Vault]

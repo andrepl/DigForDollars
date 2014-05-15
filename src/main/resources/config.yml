@@ -1,0 +1,44 @@
+# whether or not to check for permissions
+require-permissions: true
+
+# delay in server ticks before displaying a message and depositing funds.
+# this counts from the last ore block broken of a given type.
+payout-delay: 20
+messages:
+  # {0} = total funds earned.
+  # quantity of the ore type.
+  # the ore's display name
+  paid: "&6You have recieved {0} &6for mining {1} {2}&6."
+
+ores:
+  # this name is used for ore-specific permissions of the format:
+  # digfordollars.payfor.diamond
+  diamond:
+    # if 'display' is a list, the 2nd entry is used for plural representations
+    # otherwise the provided value is used for both singular and plural.
+    display: ["&bDiamond ore block", "&bDiamond ore blocks"]
+    # material one or more Material names or id's
+    material: DIAMOND_ORE
+    # the monetary value of each block broken.
+    value: 100
+  emerald:
+    display: ["&aEmerald ore block", "&aEmerald ore blocks"]
+    material: EMERALD_ORE
+    value: 125
+  lapis:
+    display: ["&9Lapis ore block", "&9Lapis ore blocks"]
+    material: LAPIS_ORE
+    value: 75
+  redstone:
+    display: ["&cRedstone ore block", "&cRedstone ore blocks"]
+    material: [REDSTONE_ORE, GLOWING_REDSTONE_ORE]
+    value: 35
+  quartz:
+    display: ["&fQuartz ore block", "&fQuartz ore blocks"]
+    material: QUARTZ_ORE
+    value: 50
+  coal:
+    display: ["&7Coal ore block", "&7Coal ore block"]
+    material: COAL_ORE
+    value: 10
+
