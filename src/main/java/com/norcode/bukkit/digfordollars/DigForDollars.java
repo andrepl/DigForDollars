@@ -35,29 +35,29 @@ import java.util.UUID;
 
 public class DigForDollars extends JavaPlugin implements Listener {
 
-	public static Economy economy = null;
-	private HashMap<UUID, PlayerTally> tallies = new HashMap<UUID, PlayerTally>();
-	private boolean requirePermissions = true;
-	private MessageFormat paidMessage;
-	private static Method itemCausesDrops;
-	long checkTimeout = 20;
+    public static Economy economy = null;
+    private HashMap<UUID, PlayerTally> tallies = new HashMap<UUID, PlayerTally>();
+    private boolean requirePermissions = true;
+    private MessageFormat paidMessage;
+    private static Method itemCausesDrops;
+    long checkTimeout = 20;
 
-	public Economy getEconomy() {
-		return economy;
-	}
+    public Economy getEconomy() {
+        return economy;
+    }
 
 
-	private void reflect() {
-		Block b = getServer().getWorlds().get(0).getHighestBlockAt(0,0);
-		Class cbBlockClass = b.getClass();
-		try {
-			itemCausesDrops = cbBlockClass.getDeclaredMethod("itemCausesDrops", ItemStack.class);
-			itemCausesDrops.setAccessible(true);
-			getLogger().info("ItemCausesDrops  method: " + itemCausesDrops);
-		} catch (NoSuchMethodException e) {
-			e.printStackTrace();
-		}
-	}
+    private void reflect() {
+        Block b = getServer().getWorlds().get(0).getHighestBlockAt(0,0);
+        Class cbBlockClass = b.getClass();
+        try {
+            itemCausesDrops = cbBlockClass.getDeclaredMethod("itemCausesDrops", ItemStack.class);
+            itemCausesDrops.setAccessible(true);
+            getLogger().info("ItemCausesDrops  method: " + itemCausesDrops);
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        }
+    }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -74,14 +74,14 @@ public class DigForDollars extends JavaPlugin implements Listener {
     }
 
     @Override
-	public void reloadConfig() {
-		getLogger().info("Reloading Config for DigForDollars");
+    public void reloadConfig() {
+        getLogger().info("Reloading Config for DigForDollars");
         BlockPlaceEvent.getHandlerList().unregister((Plugin) this);
-		super.reloadConfig();
-		requirePermissions = getConfig().getBoolean("require-permissions", true);
-		paidMessage = new MessageFormat(getConfig().getString("messages.paid"));
-		checkTimeout = getConfig().getLong("payout-delay", 20);
-		loadOres();
+        super.reloadConfig();
+        requirePermissions = getConfig().getBoolean("require-permissions", true);
+        paidMessage = new MessageFormat(getConfig().getString("messages.paid"));
+        checkTimeout = getConfig().getLong("payout-delay", 20);
+        loadOres();
         boolean listen = false;
         for (Ore ore: Ore.values()) {
             if (ore.getIgnoreData() != -1) {
@@ -92,148 +92,148 @@ public class DigForDollars extends JavaPlugin implements Listener {
         if (listen) {
             getServer().getPluginManager().registerEvents(new PlaceListener(), this);
         }
-	}
+    }
 
-	/**
-	 * load ore definitions:
-	 *
-	 * config.yml example:
-	 *
-	 *     ores:
-	 *       glass:
-	 *         display: "glass"
-	 *         material: [GLASS, STAINED_GLASS],
-	 *         value: 0.60
-	 *       glass-pane:
-	 *         display: ["glass pane", "panes of glass"]
-	 *         material: 160
-	 *         value: 0.1
-	 *
-	 */
+    /**
+     * load ore definitions:
+     *
+     * config.yml example:
+     *
+     *     ores:
+     *       glass:
+     *         display: "glass"
+     *         material: [GLASS, STAINED_GLASS],
+     *         value: 0.60
+     *       glass-pane:
+     *         display: ["glass pane", "panes of glass"]
+     *         material: 160
+     *         value: 0.1
+     *
+     */
 
-	private void loadOres() {
-		Ore.reset();
-		Permission wildcard = getServer().getPluginManager().getPermission("digfordollars.payfor.*");
-		if (wildcard == null) {
-			getLogger().warning("No wildcard perm?");
-			wildcard = new Permission("digfordollars.payfor.*", PermissionDefault.TRUE);
-			wildcard.setDescription("Allow earning money from all registered ores");
-			getServer().getPluginManager().addPermission(wildcard);
-		} else {
-			getLogger().info("found wildcard, clearing children");
-			Map<String, Boolean> children = wildcard.getChildren();
-			if (children != null) {
-				Iterator<String> it = wildcard.getChildren().keySet().iterator();
-				while (it.hasNext()) {
-					String ps = it.next();
-					getServer().getPluginManager().removePermission(ps);
-					getLogger().info("Removed " + ps);
-					it.remove();
-				}
-			}
-		}
-		wildcard.recalculatePermissibles();
+    private void loadOres() {
+        Ore.reset();
+        Permission wildcard = getServer().getPluginManager().getPermission("digfordollars.payfor.*");
+        if (wildcard == null) {
+            getLogger().warning("No wildcard perm?");
+            wildcard = new Permission("digfordollars.payfor.*", PermissionDefault.TRUE);
+            wildcard.setDescription("Allow earning money from all registered ores");
+            getServer().getPluginManager().addPermission(wildcard);
+        } else {
+            getLogger().info("found wildcard, clearing children");
+            Map<String, Boolean> children = wildcard.getChildren();
+            if (children != null) {
+                Iterator<String> it = wildcard.getChildren().keySet().iterator();
+                while (it.hasNext()) {
+                    String ps = it.next();
+                    getServer().getPluginManager().removePermission(ps);
+                    getLogger().info("Removed " + ps);
+                    it.remove();
+                }
+            }
+        }
+        wildcard.recalculatePermissibles();
 
-		ConfigurationSection oreConfig = getConfig().getConfigurationSection("ores");
-		ConfigurationSection cfg;
-		for (String key: oreConfig.getKeys(false)) {
-			cfg = oreConfig.getConfigurationSection(key);
+        ConfigurationSection oreConfig = getConfig().getConfigurationSection("ores");
+        ConfigurationSection cfg;
+        for (String key: oreConfig.getKeys(false)) {
+            cfg = oreConfig.getConfigurationSection(key);
 
-			// get the material(s)
-			List<String> matInputs = new ArrayList<String>();
-			if (cfg.isList("material")) {
-				matInputs = cfg.getStringList("material");
-			} else {
-				matInputs.add(cfg.getString("material"));
-			}
+            // get the material(s)
+            List<String> matInputs = new ArrayList<String>();
+            if (cfg.isList("material")) {
+                matInputs = cfg.getStringList("material");
+            } else {
+                matInputs.add(cfg.getString("material"));
+            }
 
-			EnumSet<Material> mats = EnumSet.noneOf(Material.class);
-			for (String matIn: matInputs) {
-				Material mat = Material.matchMaterial(matIn);
-				if (mat != null) {
-					mats.add(mat);
-				} else {
-					getLogger().warning("Ignoring material '" + matIn + "' for ore '" + key + "'.");
-				}
-			}
-			if (mats.size() == 0) {
-				getLogger().warning("Ignoring ore '" + key + "', no valid materials.");
-				continue;
-			}
+            EnumSet<Material> mats = EnumSet.noneOf(Material.class);
+            for (String matIn: matInputs) {
+                Material mat = Material.matchMaterial(matIn);
+                if (mat != null) {
+                    mats.add(mat);
+                } else {
+                    getLogger().warning("Ignoring material '" + matIn + "' for ore '" + key + "'.");
+                }
+            }
+            if (mats.size() == 0) {
+                getLogger().warning("Ignoring ore '" + key + "', no valid materials.");
+                continue;
+            }
 
-			// get the display name(s)
-			String displayName = null;
-			String displayNamePlural = null;
-			if (cfg.isList("display")) {
-				List<String> dispNames = cfg.getStringList("display");
-				displayName = dispNames.get(0);
-				try {
-					displayNamePlural = dispNames.get(1);
-				} catch (IndexOutOfBoundsException ex) {
-					displayNamePlural = displayName;
-				}
-			} else {
-				displayName = cfg.getString("display", key.replace("_", " ").replace("-", " "));
-				displayNamePlural = displayName;
-			}
+            // get the display name(s)
+            String displayName = null;
+            String displayNamePlural = null;
+            if (cfg.isList("display")) {
+                List<String> dispNames = cfg.getStringList("display");
+                displayName = dispNames.get(0);
+                try {
+                    displayNamePlural = dispNames.get(1);
+                } catch (IndexOutOfBoundsException ex) {
+                    displayNamePlural = displayName;
+                }
+            } else {
+                displayName = cfg.getString("display", key.replace("_", " ").replace("-", " "));
+                displayNamePlural = displayName;
+            }
 
-			double value = cfg.getDouble("value");
-			boolean checkDrops = cfg.getBoolean("check-drops", true);
+            double value = cfg.getDouble("value");
+            boolean checkDrops = cfg.getBoolean("check-drops", true);
             short ignoreData = (short) cfg.getInt("ignore-data", -1);
-			Ore ore = new Ore(key, displayName,  displayNamePlural, value, true, mats, ignoreData);
-			Permission perm = new Permission("digfordollars.payfor." + key);
-			perm.addParent(wildcard, true);
-			perm.recalculatePermissibles();
-			getLogger().info("Registered Ore: " + ore);
-		}
-		wildcard.recalculatePermissibles();
-	}
+            Ore ore = new Ore(key, displayName,  displayNamePlural, value, true, mats, ignoreData);
+            Permission perm = new Permission("digfordollars.payfor." + key);
+            perm.addParent(wildcard, true);
+            perm.recalculatePermissibles();
+            getLogger().info("Registered Ore: " + ore);
+        }
+        wildcard.recalculatePermissibles();
+    }
 
 
-	@Override
-	public void onEnable() {
-		if (!this.setupEconomy()) {
-			getLogger().severe("No Economy plugin found.  DigForDollars is disabled.");
-			getServer().getPluginManager().disablePlugin(this);
-			return;
-		}
-		getServer().getPluginManager().registerEvents(this, this);
-		saveDefaultConfig();
-		reloadConfig();
-		getServer().getScheduler().runTaskTimer(this, new Runnable() {
-			@Override
-			public void run() {
-				processTallies();
-			}
-		}, checkTimeout, checkTimeout);
-		reflect();
-	}
+    @Override
+    public void onEnable() {
+        if (!this.setupEconomy()) {
+            getLogger().severe("No Economy plugin found.  DigForDollars is disabled.");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+        getServer().getPluginManager().registerEvents(this, this);
+        saveDefaultConfig();
+        reloadConfig();
+        getServer().getScheduler().runTaskTimer(this, new Runnable() {
+            @Override
+            public void run() {
+                processTallies();
+            }
+        }, checkTimeout, checkTimeout);
+        reflect();
+    }
 
-	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-	public void onBlockBreak(BlockBreakEvent event) {
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onBlockBreak(BlockBreakEvent event) {
 
-		Player player = event.getPlayer();
+        Player player = event.getPlayer();
 
-		if (player.getGameMode().equals(GameMode.CREATIVE)) {
-			return;
-		}
+        if (player.getGameMode().equals(GameMode.CREATIVE)) {
+            return;
+        }
 
-		Ore ore = Ore.getByMaterial(event.getBlock().getType());
-		if  (ore == null) {
-			return;
-		}
+        Ore ore = Ore.getByMaterial(event.getBlock().getType());
+        if  (ore == null) {
+            return;
+        }
 
-		boolean pay = true;
-		if (ore.isCheckDrops()) {
-			pay = false;
-			try {
-				pay = (Boolean) itemCausesDrops.invoke(event.getBlock(), player.getItemInHand());
-			} catch (InvocationTargetException e) {
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-			}
-		}
+        boolean pay = true;
+        if (ore.isCheckDrops()) {
+            pay = false;
+            try {
+                pay = (Boolean) itemCausesDrops.invoke(event.getBlock(), player.getItemInHand());
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
 
         if (ore.getIgnoreData() != -1) {
             if (event.getBlock().getData() == ore.getIgnoreData()) {
@@ -241,51 +241,51 @@ public class DigForDollars extends JavaPlugin implements Listener {
             }
         }
 
-		if (pay && !player.getItemInHand().getEnchantments().containsKey(Enchantment.SILK_TOUCH)) {
-			if (!requirePermissions || player.hasPermission(ore.getRequiredPermission())) {
-				getPlayerTally(player).add(ore);
-			}
-		}
-	}
+        if (pay && !player.getItemInHand().getEnchantments().containsKey(Enchantment.SILK_TOUCH)) {
+            if (!requirePermissions || player.hasPermission(ore.getRequiredPermission())) {
+                getPlayerTally(player).add(ore);
+            }
+        }
+    }
 
-	private PlayerTally getPlayerTally(Player player) {
-		PlayerTally tally = tallies.get(player.getUniqueId());
-		if (tally == null) {
-			tally = new PlayerTally(this, player.getUniqueId());
-			tallies.put(player.getUniqueId(), tally);
-		}
-		return tally;
-	}
+    private PlayerTally getPlayerTally(Player player) {
+        PlayerTally tally = tallies.get(player.getUniqueId());
+        if (tally == null) {
+            tally = new PlayerTally(this, player.getUniqueId());
+            tallies.put(player.getUniqueId(), tally);
+        }
+        return tally;
+    }
 
-	public void processTallies() {
-		Iterator<Map.Entry<UUID, PlayerTally>> it = tallies.entrySet().iterator();
-		long now = System.currentTimeMillis();
-		while (it.hasNext()) {
-			Map.Entry<String, PlayerTally> entry = (Map.Entry)it.next();
-			if (entry.getValue().isReady(now)) {
-				entry.getValue().doReward();
-				it.remove();
-			}
-		}
-	}
+    public void processTallies() {
+        Iterator<Map.Entry<UUID, PlayerTally>> it = tallies.entrySet().iterator();
+        long now = System.currentTimeMillis();
+        while (it.hasNext()) {
+            Map.Entry<String, PlayerTally> entry = (Map.Entry) it.next();
+            if (entry.getValue().isReady(now)) {
+                entry.getValue().doReward();
+                it.remove();
+            }
+        }
+    }
 
-	@EventHandler(priority = EventPriority.MONITOR)
-	public void onPlayerQuit(PlayerQuitEvent event) {
-		PlayerTally tally = tallies.get(event.getPlayer().getUniqueId());
-		if (tally != null) {
-			tally.flushPay();
-		}
-	}
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        PlayerTally tally = tallies.get(event.getPlayer().getUniqueId());
+        if (tally != null) {
+            tally.flushPay();
+        }
+    }
 
-	private boolean setupEconomy() {
-		RegisteredServiceProvider<Economy> economyProvider = getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
-		if (economyProvider != null) {
-			economy = economyProvider.getProvider();
-		}
-		return (economy != null);
-	}
+    private boolean setupEconomy() {
+        RegisteredServiceProvider<Economy> economyProvider = getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
+        if (economyProvider != null) {
+            economy = economyProvider.getProvider();
+        }
+        return (economy != null);
+    }
 
-	public MessageFormat getPaidMessage() {
-		return paidMessage;
-	}
+    public MessageFormat getPaidMessage() {
+        return paidMessage;
+    }
 }
