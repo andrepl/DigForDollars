@@ -12,13 +12,14 @@ public class Ore {
 	private static HashMap<Material, Ore> byMaterial = new HashMap<Material, Ore>();
 	private static HashMap<String, Ore> byName = new HashMap<String, Ore>();
 
-	public Ore(String name, String displayName, String displayNamePlural, double value, boolean checkDrops, EnumSet<Material> materials) {
+	public Ore(String name, String displayName, String displayNamePlural, double value, boolean checkDrops, EnumSet<Material> materials, short ignoreData) {
 		this.checkDrops = checkDrops;
 		this.name = name.toLowerCase();
 		this.displayName = displayName;
 		this.displayNamePlural = displayNamePlural;
 		this.materials = materials;
 		this.value = value;
+        this.ignoreData = ignoreData;
 		for (Material m: this.materials) {
 			byMaterial.put(m, this);
 		}
@@ -36,6 +37,7 @@ public class Ore {
 	private final String name;
 	private final String displayName;
 	private final String displayNamePlural;
+    private final short ignoreData;
 	private final EnumSet<Material> materials;
 	private final double value;
 	private final boolean checkDrops;
@@ -76,4 +78,8 @@ public class Ore {
 	public boolean isCheckDrops() {
 		return checkDrops;
 	}
+
+    public short getIgnoreData() {
+        return ignoreData;
+    }
 }

@@ -6,8 +6,8 @@ require-permissions: true
 payout-delay: 20
 messages:
   # {0} = total funds earned.
-  # quantity of the ore type.
-  # the ore's display name
+  # {1} = quantity of the ore type.
+  # {2} = the ore's display name
   paid: "&6You have recieved {0} &6for mining {1} {2}&6."
 
 ores:
@@ -21,6 +21,10 @@ ores:
     material: DIAMOND_ORE
     # the monetary value of each block broken.
     value: 100
+    # do not pay out if the block's data value is this:
+    # set to -1 (default) to pay out for any data value.
+    ignore-data: -1
+
   emerald:
     display: ["&aEmerald ore block", "&aEmerald ore blocks"]
     material: EMERALD_ORE

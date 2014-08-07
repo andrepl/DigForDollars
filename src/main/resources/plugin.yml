@@ -3,3 +3,13 @@ name: ${project.name}
 version: ${project.version}
 author: ${project.authors}
 depend: [Vault]
+commands:
+  digfordollars:
+    aliases: ['dfd']
+    permission: digfordollars.admin
+    usage: <command> [reload]
+
+permissions:
+  digfordollars.admin:
+    description: allows usage of 'digfordollars' command.
+    default: op

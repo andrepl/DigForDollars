@@ -4,6 +4,8 @@ import net.milkbowl.vault.economy.Economy;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -11,10 +13,12 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -55,20 +59,43 @@ public class DigForDollars extends JavaPlugin implements Listener {
 		}
 	}
 
-	@Override
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (command.getName().equals("digfordollars")) {
+            if (args.length ==1 && args[0].equalsIgnoreCase("reload")) {
+                    reloadConfig();
+                    sender.sendMessage("DigForDollars configuration reloaded.");
+            } else {
+                sender.sendMessage(command.getUsage());
+            }
+            return true;
+        }
+        return false;
+    }
+
+    @Override
 	public void reloadConfig() {
 		getLogger().info("Reloading Config for DigForDollars");
+        BlockPlaceEvent.getHandlerList().unregister((Plugin) this);
 		super.reloadConfig();
 		requirePermissions = getConfig().getBoolean("require-permissions", true);
 		paidMessage = new MessageFormat(getConfig().getString("messages.paid"));
 		checkTimeout = getConfig().getLong("payout-delay", 20);
 		loadOres();
+        boolean listen = false;
+        for (Ore ore: Ore.values()) {
+            if (ore.getIgnoreData() != -1) {
+                listen = true;
+                break;
+            }
+        }
+        if (listen) {
+            getServer().getPluginManager().registerEvents(new PlaceListener(), this);
+        }
 	}
 
 	/**
 	 * load ore definitions:
-	 *
-	 * This is only
 	 *
 	 * config.yml example:
 	 *
@@ -152,7 +179,8 @@ public class DigForDollars extends JavaPlugin implements Listener {
 
 			double value = cfg.getDouble("value");
 			boolean checkDrops = cfg.getBoolean("check-drops", true);
-			Ore ore = new Ore(key, displayName,  displayNamePlural, value, true, mats);
+            short ignoreData = (short) cfg.getInt("ignore-data", -1);
+			Ore ore = new Ore(key, displayName,  displayNamePlural, value, true, mats, ignoreData);
 			Permission perm = new Permission("digfordollars.payfor." + key);
 			perm.addParent(wildcard, true);
 			perm.recalculatePermissibles();
@@ -206,6 +234,13 @@ public class DigForDollars extends JavaPlugin implements Listener {
 				e.printStackTrace();
 			}
 		}
+
+        if (ore.getIgnoreData() != -1) {
+            if (event.getBlock().getData() == ore.getIgnoreData()) {
+                pay = false;
+            }
+        }
+
 		if (pay && !player.getItemInHand().getEnchantments().containsKey(Enchantment.SILK_TOUCH)) {
 			if (!requirePermissions || player.hasPermission(ore.getRequiredPermission())) {
 				getPlayerTally(player).add(ore);

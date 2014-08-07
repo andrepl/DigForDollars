@@ -6,7 +6,7 @@
 
     <groupId>com.norcode.bukkit.digfordollars</groupId>
     <artifactId>DigForDollars</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.1</version>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.authors>metalhedd</project.authors>
@@ -51,12 +51,6 @@
     </repositories>
 
     <dependencies>
-        <dependency>
-            <groupId>cglib</groupId>
-            <artifactId>cglib-nodep</artifactId>
-            <version>2.2.2</version>
-            <scope>compile</scope>
-        </dependency>
         <dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>bukkit</artifactId>
